@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28701.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stateless-guess-game", "stateless-guess-game\stateless-guess-game.csproj", "{9AF301B5-5A30-4EA4-BDEB-638C15A632E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stateless-guess-game-tests", "..\stateless-guess-game-tests\stateless-guess-game-tests.csproj", "{C2230474-D2A0-43E9-8947-8310D78671D9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9AF301B5-5A30-4EA4-BDEB-638C15A632E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AF301B5-5A30-4EA4-BDEB-638C15A632E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AF301B5-5A30-4EA4-BDEB-638C15A632E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AF301B5-5A30-4EA4-BDEB-638C15A632E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2230474-D2A0-43E9-8947-8310D78671D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2230474-D2A0-43E9-8947-8310D78671D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2230474-D2A0-43E9-8947-8310D78671D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2230474-D2A0-43E9-8947-8310D78671D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {87DA048C-2E4F-413D-A607-6D93FD51980F}
+	EndGlobalSection
+EndGlobal
