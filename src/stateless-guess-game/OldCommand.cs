@@ -1,13 +1,9 @@
-﻿using System;
-using System.Text;
-
-namespace stateless_guess_game
+﻿namespace stateless_guess_game
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
-   
+
 
     namespace Quiltoni.PixelBot.Commands
     {
@@ -30,29 +26,29 @@ namespace stateless_guess_game
 
             private static readonly Dictionary<string, TimeSpan> _Guesses = new Dictionary<string, TimeSpan>();
 
-            private static readonly Dictionary<GuessGameState, Action<GuessTimeCommandOld, ChatCommand, IChatService>> _GameHandlers = new Dictionary<GuessGameState, Action<GuessTimeCommandOld, ChatCommand, IChatService>> {
+            private static readonly Dictionary<GuessGameState, Action<GuessTimeCommandOld, GuessGameCommand, IChatService>> _GameHandlers = new Dictionary<GuessGameState, Action<GuessTimeCommandOld, GuessGameCommand, IChatService>> {
             { GuessGameState.NotStarted, NotStarted },
             { GuessGameState.OpenTakingGuesses, TakeGuess },
             { GuessGameState.GuessesClosed, Closed }
         };
 
-            public void Execute(ChatCommand command, IChatService twitch)
+            public void Execute(GuessGameCommand command, IChatService twitch)
             {
 
                 _GameHandlers[State](this, command, twitch);
 
             }
 
-            private static void NotStarted(GuessTimeCommandOld guess, ChatCommand cmd, IChatService twitch)
+            private static void NotStarted(GuessTimeCommandOld guess, GuessGameCommand cmd, IChatService twitch)
             {
 
                 // This is a moderator / broadcaster ONLY command
-                if (!cmd.ChatMessage.IsBroadcaster && !cmd.ChatMessage.IsModerator)
+                if (!cmd.ChatUser.IsBroadcaster && !cmd.ChatUser.IsModerator)
                    return;
 
                if (cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help")
                {
-                   twitch.WhisperMessage(cmd.ChatMessage.DisplayName, "The time-guessing game is not currently running.  To open the game for guesses, execute !guess open");
+                   twitch.WhisperMessage(cmd.ChatUser.DisplayName, "The time-guessing game is not currently running.  To open the game for guesses, execute !guess open");
                    return;
                }
 
@@ -67,12 +63,12 @@ namespace stateless_guess_game
 
             }
 
-            private static void TakeGuess(GuessTimeCommandOld guess, ChatCommand cmd, IChatService twitch)
+            private static void TakeGuess(GuessTimeCommandOld guess, GuessGameCommand cmd, IChatService twitch)
             {
 
-                if ((cmd.ChatMessage.IsBroadcaster || cmd.ChatMessage.IsModerator) && (cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help"))
+                if ((cmd.ChatUser.IsBroadcaster || cmd.ChatUser.IsModerator) && (cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help"))
                 {
-                   twitch.WhisperMessage(cmd.ChatMessage.Username, "The time-guessing game is currently taking guesses.  Guess a time with !guess 1:23 OR close the guesses with !guess close");
+                   twitch.WhisperMessage(cmd.ChatUser.Username, "The time-guessing game is currently taking guesses.  Guess a time with !guess 1:23 OR close the guesses with !guess close");
                    return;
                 }
                 else if (cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help")
@@ -81,7 +77,7 @@ namespace stateless_guess_game
                    return;
                 }
 
-                if ((cmd.ChatMessage.IsBroadcaster || cmd.ChatMessage.IsModerator) && (cmd.ArgumentsAsList[0] == "close"))
+                if ((cmd.ChatUser.IsBroadcaster || cmd.ChatUser.IsModerator) && (cmd.ArgumentsAsList[0] == "close"))
                 {
                    State = GuessGameState.GuessesClosed;
                    twitch.BroadcastMessageOnChannel($"No more guesses...  the race is about to start with {_Guesses.Count} guesses from {_Guesses.Min(kv => kv.Value).ToString()} to {_Guesses.Max(kv => kv.Value).ToString()}");
@@ -94,43 +90,43 @@ namespace stateless_guess_game
                    if (_Guesses.Any(kv => kv.Value == time))
                    {
                        var firstGuess = _Guesses.First(kv => kv.Value == time);
-                       twitch.BroadcastMessageOnChannel($"Sorry {cmd.ChatMessage.Username}, {firstGuess.Key} already guessed {time.ToString()}");
+                       twitch.BroadcastMessageOnChannel($"Sorry {cmd.ChatUser.Username}, {firstGuess.Key} already guessed {time.ToString()}");
                        return;
                    }
-                   else if (_Guesses.Any(kv => kv.Key == cmd.ChatMessage.Username))
+                   else if (_Guesses.Any(kv => kv.Key == cmd.ChatUser.Username))
                    {
-                       _Guesses[cmd.ChatMessage.Username] = time;
+                       _Guesses[cmd.ChatUser.Username] = time;
                    }
                    else
                    {
-                       _Guesses.Add(cmd.ChatMessage.Username, time);
+                       _Guesses.Add(cmd.ChatUser.Username, time);
                    }
 
                 }
                 else if (cmd.ArgumentsAsList[0] == "mine")
                 {
-                   if (_Guesses.Any(kv => kv.Key == cmd.ChatMessage.Username))
+                   if (_Guesses.Any(kv => kv.Key == cmd.ChatUser.Username))
                    {
-                       twitch.BroadcastMessageOnChannel($"{cmd.ChatMessage.Username} guessed {_Guesses[cmd.ChatMessage.Username].ToString()}");
+                       twitch.BroadcastMessageOnChannel($"{cmd.ChatUser.Username} guessed {_Guesses[cmd.ChatUser.Username].ToString()}");
                    }
                    else
                    {
-                       twitch.BroadcastMessageOnChannel($"{cmd.ChatMessage.Username} has not guessed yet!");
+                       twitch.BroadcastMessageOnChannel($"{cmd.ChatUser.Username} has not guessed yet!");
                    }
 
                 }
                 else
                 {
-                   twitch.BroadcastMessageOnChannel($"Sorry {cmd.ChatMessage.Username}, guesses are only accepted in the format !guess 1:23");
+                   twitch.BroadcastMessageOnChannel($"Sorry {cmd.ChatUser.Username}, guesses are only accepted in the format !guess 1:23");
                    return;
                 }
 
             }
 
-            private static void Closed(GuessTimeCommandOld guess, ChatCommand cmd, IChatService twitch)
+            private static void Closed(GuessTimeCommandOld guess, GuessGameCommand cmd, IChatService twitch)
             {
 
-                if ((cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help") && (!cmd.ChatMessage.IsBroadcaster && !cmd.ChatMessage.IsModerator))
+                if ((cmd.ArgumentsAsList.Count == 0 || cmd.ArgumentsAsList[0] == "help") && (!cmd.ChatUser.IsBroadcaster && !cmd.ChatUser.IsModerator))
                 {
                    twitch.BroadcastMessageOnChannel("The time-guessing game is currently CLOSED.  You can check your guess with !guess mine");
                    return;
@@ -138,28 +134,28 @@ namespace stateless_guess_game
 
                 if (cmd.ArgumentsAsList[0] == "mine")
                 {
-                    if (_Guesses.Any(kv => kv.Key == cmd.ChatMessage.Username))
+                    if (_Guesses.Any(kv => kv.Key == cmd.ChatUser.Username))
                     {
-                       twitch.BroadcastMessageOnChannel($"{cmd.ChatMessage.Username} guessed {_Guesses[cmd.ChatMessage.Username].ToString()}");
+                       twitch.BroadcastMessageOnChannel($"{cmd.ChatUser.Username} guessed {_Guesses[cmd.ChatUser.Username].ToString()}");
                     }
                     else
                     {
-                       twitch.BroadcastMessageOnChannel($"{cmd.ChatMessage.Username} has not guessed yet!");
+                       twitch.BroadcastMessageOnChannel($"{cmd.ChatUser.Username} has not guessed yet!");
                     }
                     return;
                 }
 
                 // This is a moderator / broadcaster ONLY command
-                if (!cmd.ChatMessage.IsBroadcaster && !cmd.ChatMessage.IsModerator)
+                if (!cmd.ChatUser.IsBroadcaster && !cmd.ChatUser.IsModerator)
                     return;
 
                 if (cmd.ArgumentsAsList[0] == "help")
                 {
-                    twitch.WhisperMessage(cmd.ChatMessage.Username, $"The time-guessing game is currently CLOSED with {_Guesses.Count} guesses awaiting an outcome.  Guess a time with !guess 1:23 OR close the guesses with !guess close");
+                    twitch.WhisperMessage(cmd.ChatUser.Username, $"The time-guessing game is currently CLOSED with {_Guesses.Count} guesses awaiting an outcome.  Guess a time with !guess 1:23 OR close the guesses with !guess close");
                     return;
                 }
 
-                if ((cmd.ChatMessage.IsBroadcaster || cmd.ChatMessage.IsModerator) && cmd.ArgumentsAsList[0] == "reopen")
+                if ((cmd.ChatUser.IsBroadcaster || cmd.ChatUser.IsModerator) && cmd.ArgumentsAsList[0] == "reopen")
                 {
                    State = GuessGameState.OpenTakingGuesses;
                    twitch.BroadcastMessageOnChannel("Now taking guesses again!  You may log a new guess or change your guess now!");

@@ -1,8 +1,8 @@
-﻿namespace stateless_guess_game.Quiltoni.PixelBot.Commands
+﻿namespace stateless_guess_game
 {
     public interface IChatService
     {
-        void BroadcastMessageOnChannel(string p0);
-        void WhisperMessage(object username, string s);
+        void BroadcastMessageOnChannel(string message);
+        void WhisperMessage(string username, string message);
     }
 }
